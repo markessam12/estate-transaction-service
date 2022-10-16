@@ -3,9 +3,13 @@ package com.example.service.soap;
 import com.example.model.dao.OwnerDAO;
 import com.example.model.dao.PropertyDAO;
 import com.example.model.dao.TransactionDAO;
+import com.example.resources.AerospikeReader;
 import com.example.util.AerospikeDB;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
+
+import java.util.Comparator;
+import java.util.Optional;
 
 @WebService
 public class SoapServices {
@@ -21,7 +25,14 @@ public class SoapServices {
         OwnerDAO owner = AerospikeDB.mapper.read(OwnerDAO.class, userName);
         if(owner == null)
             return "Owner not found!";
-        AerospikeDB.mapper.save(new PropertyDAO(propertyAddress,owner,cost));
+        AerospikeReader<PropertyDAO> reader = new AerospikeReader<>(PropertyDAO.class);
+        Optional<PropertyDAO> propertyWithHighestID =  reader.getSet(AerospikeDB.NAMESPACE, AerospikeDB.PROPERTY, "propertyId")
+                    .stream()
+                    .max(Comparator.comparing(PropertyDAO::getPropertyId));
+        int highestID = 0;
+        if(propertyWithHighestID.isPresent())
+            highestID = propertyWithHighestID.get().getPropertyId();
+        AerospikeDB.mapper.save(new PropertyDAO(highestID + 1, propertyAddress, owner, cost));
         return "Property added successfully!";
     }
 

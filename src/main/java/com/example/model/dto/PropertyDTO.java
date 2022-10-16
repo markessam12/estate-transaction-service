@@ -12,12 +12,6 @@ public class PropertyDTO {
 
     public PropertyDTO(){}
 
-    public PropertyDTO(String address, String propertyOwner, long cost) {
-        this.address = address;
-        this.propertyOwner = propertyOwner;
-        this.cost = cost;
-    }
-
     public int getPropertyId() {
         return propertyId;
     }

@@ -1,6 +1,5 @@
 package com.example.model.dao;
 
-import com.aerospike.mapper.annotations.AerospikeExclude;
 import com.aerospike.mapper.annotations.AerospikeKey;
 import com.aerospike.mapper.annotations.AerospikeRecord;
 import com.aerospike.mapper.annotations.AerospikeReference;
@@ -8,8 +7,6 @@ import com.example.util.AerospikeDB;
 
 @AerospikeRecord(namespace= AerospikeDB.NAMESPACE, set = AerospikeDB.PROPERTY)
 public class PropertyDAO {
-    @AerospikeExclude
-    private static int uniqueId = 1;
     @AerospikeKey
     private int propertyId;
     private String address;
@@ -19,13 +16,11 @@ public class PropertyDAO {
     private int forSale;
 
     public PropertyDAO(){}
-
-    public PropertyDAO(String address, OwnerDAO propertyOwner, long cost) {
-        this.propertyId = uniqueId;
-        uniqueId++;
+    public PropertyDAO(int propertyId ,String address, OwnerDAO propertyOwner, long cost) {
+        this();
+        this.propertyId = propertyId;
         this.address = address;
         this.propertyOwner = propertyOwner;
-//        propertyOwner.addProperty(this);
         this.cost = cost;
     }
 
@@ -33,16 +28,8 @@ public class PropertyDAO {
         return propertyId;
     }
 
-    public void setPropertyId(int propertyId) {
-        this.propertyId = propertyId;
-    }
-
     public String getAddress() {
         return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public OwnerDAO getPropertyOwner() {
@@ -60,7 +47,6 @@ public class PropertyDAO {
     public void setCost(long cost) {
         this.cost = cost;
     }
-
 
     public int getForSale() {
         return forSale;

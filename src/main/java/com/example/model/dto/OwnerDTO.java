@@ -1,9 +1,6 @@
 package com.example.model.dto;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "owner")
@@ -16,13 +13,6 @@ public class OwnerDTO {
     public List<PropertyDTO> ownedProperties;
 
     public OwnerDTO(){}
-
-    public OwnerDTO(String firstName, String lastName, long balance) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.balance = balance;
-        this.ownedProperties = new ArrayList<>();
-    }
 
     public String getUserName() {
         return userName;
@@ -56,7 +46,7 @@ public class OwnerDTO {
         this.balance = balance;
     }
 
-    public void addProperty(PropertyDTO property){
-        this.ownedProperties.add(property);
+    public void setOwnedProperties(List<PropertyDTO> properties){
+        this.ownedProperties = properties;
     }
 }

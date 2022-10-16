@@ -1,11 +1,9 @@
 package com.example.model.dto;
 
-import com.example.util.Utility;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "transaction")
 public class TransactionDTO {
-    private int transactionId;
     private String date;
     private String seller;
     private String buyer;
@@ -13,15 +11,6 @@ public class TransactionDTO {
     private long price;
 
     public TransactionDTO(){}
-
-    public int getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(int transactionId) {
-        this.transactionId = transactionId;
-    }
-
     public String getDate() {
         return date;
     }
