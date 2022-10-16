@@ -1,16 +1,23 @@
 package com.example.model.dto;
 
+import jakarta.ws.rs.core.Link;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.List;
 
 @XmlRootElement(name = "owner")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class OwnerDTO {
     private String userName;
     private String firstName;
 
     private String lastName;
     private long balance;
-    public List<PropertyDTO> ownedProperties;
+    @XmlJavaTypeAdapter(Link.JaxbAdapter.class)
+    private List<Link> links;
+    private List<PropertyDTO> ownedProperties;
 
     public OwnerDTO(){}
 
@@ -48,5 +55,17 @@ public class OwnerDTO {
 
     public void setOwnedProperties(List<PropertyDTO> properties){
         this.ownedProperties = properties;
+    }
+
+    public void setLinks(List<Link> links){
+        this.links = links;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public List<PropertyDTO> getOwnedProperties() {
+        return ownedProperties;
     }
 }

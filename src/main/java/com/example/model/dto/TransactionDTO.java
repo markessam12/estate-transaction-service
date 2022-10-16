@@ -1,14 +1,24 @@
 package com.example.model.dto;
 
+import jakarta.ws.rs.core.Link;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import java.util.List;
 
 @XmlRootElement(name = "transaction")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class TransactionDTO {
     private String date;
     private String seller;
     private String buyer;
     private int property;
     private long price;
+    @XmlJavaTypeAdapter(Link.JaxbAdapter.class)
+    private List<Link> links;
+
 
     public TransactionDTO(){}
     public String getDate() {
@@ -49,5 +59,13 @@ public class TransactionDTO {
 
     public void setPrice(long price) {
         this.price = price;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<Link> links) {
+        this.links = links;
     }
 }
