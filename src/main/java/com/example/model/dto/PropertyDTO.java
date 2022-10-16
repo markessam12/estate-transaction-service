@@ -1,30 +1,18 @@
-package com.example.model;
+package com.example.model.dto;
 
-import com.aerospike.mapper.annotations.AerospikeExclude;
-import com.aerospike.mapper.annotations.AerospikeKey;
-import com.aerospike.mapper.annotations.AerospikeRecord;
-import com.aerospike.mapper.annotations.AerospikeReference;
-import com.example.util.AerospikeDB;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
-@AerospikeRecord(namespace= AerospikeDB.NAMESPACE, set = AerospikeDB.PROPERTY)
-public class Property{
-    @AerospikeExclude
-    private static int uniqueId = 1;
-    @AerospikeKey
+@XmlRootElement(name = "property")
+public class PropertyDTO {
     private int propertyId;
     private String address;
-    @AerospikeReference
-    private Owner propertyOwner;
+    private OwnerDTO propertyOwner;
     private long cost;
     private int forSale;
 
-    public Property(){}
+    public PropertyDTO(){}
 
-    public Property(String address, Owner propertyOwner, long cost) {
-        this.propertyId = uniqueId;
-        uniqueId++;
+    public PropertyDTO(String address, OwnerDTO propertyOwner, long cost) {
         this.address = address;
         this.propertyOwner = propertyOwner;
 //        propertyOwner.addProperty(this);
@@ -47,11 +35,11 @@ public class Property{
         this.address = address;
     }
 
-    public Owner getPropertyOwner() {
+    public OwnerDTO getPropertyOwner() {
         return propertyOwner;
     }
 
-    public void setPropertyOwner(Owner propertyOwner) {
+    public void setPropertyOwner(OwnerDTO propertyOwner) {
         this.propertyOwner = propertyOwner;
     }
 

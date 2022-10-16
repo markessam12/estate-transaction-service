@@ -7,12 +7,12 @@ import com.example.util.AerospikeDB;
 
 import java.util.ArrayList;
 
-public class TableReader<E> {
+public class AerospikeReader<E> {
     private final Class<E> type;
-    public TableReader(Class<E> type) {
+    public AerospikeReader(Class<E> type) {
         this.type = type;
     }
-    public ArrayList<E> getAllSet(String nameSpace, String set, String keyName){
+    public ArrayList<E> getSet(String nameSpace, String set, String keyName){
         ArrayList<E> setRecords = new ArrayList<>();
         Statement stmt = new Statement();
         stmt.setNamespace(nameSpace);
@@ -25,5 +25,9 @@ public class TableReader<E> {
             }
         }
         return setRecords;
+    }
+
+    public E getRow(int id){
+        return AerospikeDB.mapper.read(type, id);
     }
 }

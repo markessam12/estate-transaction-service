@@ -27,6 +27,8 @@ dependencies {
     compileOnly('jakarta.xml.ws:jakarta.xml.ws-api:3.0.1')
 
     implementation 'org.glassfish.jersey.media:jersey-media-jaxb:2.35'
+    implementation 'org.mapstruct:mapstruct:1.5.2.Final'
+    annotationProcessor('org.mapstruct:mapstruct-processor:1.5.2.Final')
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 

@@ -1,8 +1,8 @@
 package com.example.service.soap;
 
-import com.example.model.Owner;
-import com.example.model.Property;
-import com.example.model.Transaction;
+import com.example.model.dao.OwnerDAO;
+import com.example.model.dao.PropertyDAO;
+import com.example.model.dao.TransactionDAO;
 import com.example.util.AerospikeDB;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
@@ -10,22 +10,22 @@ import jakarta.jws.WebService;
 @WebService
 public class SoapServices {
     @WebMethod
-    public Owner addUser(String firstName, String lastName, int balance){
-        Owner newOwner = new Owner(firstName,lastName,balance);
+    public OwnerDAO addUser(String firstName, String lastName, Long balance){
+        OwnerDAO newOwner = new OwnerDAO(firstName,lastName,balance);
         AerospikeDB.mapper.save(newOwner);
         return newOwner;
     }
 
     @WebMethod
     public String addProperty(int ownerID, String propertyAddress, long cost){
-        Owner owner = AerospikeDB.mapper.read(Owner.class, ownerID);
-        AerospikeDB.mapper.save(new Property(propertyAddress,owner,cost));
+        OwnerDAO owner = AerospikeDB.mapper.read(OwnerDAO.class, ownerID);
+        AerospikeDB.mapper.save(new PropertyDAO(propertyAddress,owner,cost));
         return "Property added successfully!";
     }
 
     @WebMethod
     public String addBalance(int id, int balance){
-        Owner owner = AerospikeDB.mapper.read(Owner.class, id);
+        OwnerDAO owner = AerospikeDB.mapper.read(OwnerDAO.class, id);
         owner.setBalance(owner.getBalance() + balance);
         AerospikeDB.mapper.save(owner);
         return "Balance added successfully!";
@@ -33,12 +33,12 @@ public class SoapServices {
 
     @WebMethod
     public synchronized String buyProperty(int buyerID, int propertyID){
-        Owner buyer, seller;
-        Property property;
+        OwnerDAO buyer, seller;
+        PropertyDAO property;
         try{
-            buyer = AerospikeDB.mapper.read(Owner.class, buyerID);
-            property = AerospikeDB.mapper.read(Property.class, propertyID);
-            seller = AerospikeDB.mapper.read(Owner.class, property.getPropertyOwner().getId());
+            buyer = AerospikeDB.mapper.read(OwnerDAO.class, buyerID);
+            property = AerospikeDB.mapper.read(PropertyDAO.class, propertyID);
+            seller = AerospikeDB.mapper.read(OwnerDAO.class, property.getPropertyOwner().getId());
         }catch (Exception e){
             return "Incorrect Id";
         }
@@ -52,7 +52,7 @@ public class SoapServices {
         buyer.setBalance(buyer.getBalance() - property.getCost());
         property.setPropertyOwner(buyer);
         property.setForSale(0);
-        AerospikeDB.mapper.save(new Transaction(seller, buyer, property));
+        AerospikeDB.mapper.save(new TransactionDAO(seller, buyer, property));
         AerospikeDB.mapper.update(buyer,"balance");
         AerospikeDB.mapper.update(seller, "balance");
         AerospikeDB.mapper.update(property, "propertyOwner","forSale");

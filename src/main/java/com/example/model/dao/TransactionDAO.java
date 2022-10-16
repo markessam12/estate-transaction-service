@@ -1,5 +1,4 @@
-package com.example.model;
-
+package com.example.model.dao;
 
 import com.aerospike.mapper.annotations.AerospikeExclude;
 import com.aerospike.mapper.annotations.AerospikeKey;
@@ -8,26 +7,24 @@ import com.aerospike.mapper.annotations.AerospikeReference;
 import com.example.util.AerospikeDB;
 import com.example.util.Utility;
 
-import java.util.Date;
-
 @AerospikeRecord(namespace= AerospikeDB.NAMESPACE, set= AerospikeDB.TRANSACTION)
-public class Transaction {
+public class TransactionDAO {
     @AerospikeExclude
     private static int uniqueId = 1;
     @AerospikeKey
     private int transactionId;
     private String date;
     @AerospikeReference
-    private Owner seller;
+    private OwnerDAO seller;
     @AerospikeReference
-    private Owner buyer;
+    private OwnerDAO buyer;
     @AerospikeReference
-    private Property property;
+    private PropertyDAO property;
     private long price;
 
-    public Transaction(){}
+    public TransactionDAO(){}
 
-    public Transaction(Owner seller, Owner buyer, Property property) {
+    public TransactionDAO(OwnerDAO seller, OwnerDAO buyer, PropertyDAO property) {
         this.transactionId = uniqueId;
         uniqueId++;
         this.date = Utility.getCurrectDate();
@@ -53,27 +50,27 @@ public class Transaction {
         this.date = date;
     }
 
-    public Owner getSeller() {
+    public OwnerDAO getSeller() {
         return seller;
     }
 
-    public void setSeller(Owner seller) {
+    public void setSeller(OwnerDAO seller) {
         this.seller = seller;
     }
 
-    public Owner getBuyer() {
+    public OwnerDAO getBuyer() {
         return buyer;
     }
 
-    public void setBuyer(Owner buyer) {
+    public void setBuyer(OwnerDAO buyer) {
         this.buyer = buyer;
     }
 
-    public Property getProperty() {
+    public PropertyDAO getProperty() {
         return property;
     }
 
-    public void setProperty(Property property) {
+    public void setProperty(PropertyDAO property) {
         this.property = property;
     }
 

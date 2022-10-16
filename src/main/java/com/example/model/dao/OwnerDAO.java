@@ -1,34 +1,29 @@
-package com.example.model;
+package com.example.model.dao;
 
 import com.aerospike.mapper.annotations.AerospikeExclude;
 import com.aerospike.mapper.annotations.AerospikeKey;
 import com.aerospike.mapper.annotations.AerospikeRecord;
 import com.example.util.AerospikeDB;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name = "owner")
 @AerospikeRecord(namespace= AerospikeDB.NAMESPACE, set= AerospikeDB.OWNERSHIP)
-public class Owner {
+public class OwnerDAO {
     @AerospikeExclude
     private static int uniqueId = 1;
     @AerospikeKey
-    @XmlAttribute
     private int accountId;
     private String firstName;
 
     private String lastName;
     private long balance;
     @AerospikeExclude
-    public List<Property> ownedProperties;
+    public List<PropertyDAO> ownedProperties;
 
-    public Owner(){}
+    public OwnerDAO(){}
 
-    public Owner(String firstName, String lastName, int balance) {
+    public OwnerDAO(String firstName, String lastName, long balance) {
         this.accountId = uniqueId;
         uniqueId++;
         this.firstName = firstName;
@@ -69,7 +64,7 @@ public class Owner {
         this.balance = balance;
     }
 
-    public void addProperty(Property property){
+    public void addProperty(PropertyDAO property){
         this.ownedProperties.add(property);
     }
 }
