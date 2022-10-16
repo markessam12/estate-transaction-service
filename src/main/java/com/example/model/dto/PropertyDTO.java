@@ -6,16 +6,15 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 public class PropertyDTO {
     private int propertyId;
     private String address;
-    private OwnerDTO propertyOwner;
+    private String propertyOwner;
     private long cost;
     private int forSale;
 
     public PropertyDTO(){}
 
-    public PropertyDTO(String address, OwnerDTO propertyOwner, long cost) {
+    public PropertyDTO(String address, String propertyOwner, long cost) {
         this.address = address;
         this.propertyOwner = propertyOwner;
-//        propertyOwner.addProperty(this);
         this.cost = cost;
     }
 
@@ -35,11 +34,11 @@ public class PropertyDTO {
         this.address = address;
     }
 
-    public OwnerDTO getPropertyOwner() {
+    public String getPropertyOwner() {
         return propertyOwner;
     }
 
-    public void setPropertyOwner(OwnerDTO propertyOwner) {
+    public void setPropertyOwner(String propertyOwner) {
         this.propertyOwner = propertyOwner;
     }
 

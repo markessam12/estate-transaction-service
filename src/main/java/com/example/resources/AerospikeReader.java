@@ -27,7 +27,7 @@ public class AerospikeReader<E> {
         return setRecords;
     }
 
-    public E getRow(int id){
+    public E getRow(Object id){
         return AerospikeDB.mapper.read(type, id);
     }
 }

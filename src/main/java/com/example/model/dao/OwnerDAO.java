@@ -10,10 +10,8 @@ import java.util.List;
 
 @AerospikeRecord(namespace= AerospikeDB.NAMESPACE, set= AerospikeDB.OWNERSHIP)
 public class OwnerDAO {
-    @AerospikeExclude
-    private static int uniqueId = 1;
     @AerospikeKey
-    private int accountId;
+    private String userName;
     private String firstName;
 
     private String lastName;
@@ -23,21 +21,20 @@ public class OwnerDAO {
 
     public OwnerDAO(){}
 
-    public OwnerDAO(String firstName, String lastName, long balance) {
-        this.accountId = uniqueId;
-        uniqueId++;
+    public OwnerDAO(String userName, String firstName, String lastName, long balance) {
+        this.userName = userName;
         this.firstName = firstName;
         this.lastName = lastName;
         this.balance = balance;
         this.ownedProperties = new ArrayList<>();
     }
 
-    public int getId() {
-        return accountId;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setId(String id) {
-        this.accountId = Integer.parseInt(id);
+    public void setId(String username) {
+        this.userName = username;
     }
 
     public String getFirstName() {

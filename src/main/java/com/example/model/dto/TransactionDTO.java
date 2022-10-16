@@ -7,20 +7,12 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 public class TransactionDTO {
     private int transactionId;
     private String date;
-    private OwnerDTO seller;
-    private OwnerDTO buyer;
-    private PropertyDTO property;
+    private String seller;
+    private String buyer;
+    private int property;
     private long price;
 
     public TransactionDTO(){}
-
-    public TransactionDTO(OwnerDTO seller, OwnerDTO buyer, PropertyDTO property) {
-        this.date = Utility.getCurrectDate();
-        this.seller = seller;
-        this.buyer = buyer;
-        this.property = property;
-        this.price = property.getCost();
-    }
 
     public int getTransactionId() {
         return transactionId;
@@ -38,27 +30,27 @@ public class TransactionDTO {
         this.date = date;
     }
 
-    public OwnerDTO getSeller() {
+    public String getSeller() {
         return seller;
     }
 
-    public void setSeller(OwnerDTO seller) {
+    public void setSeller(String seller) {
         this.seller = seller;
     }
 
-    public OwnerDTO getBuyer() {
+    public String getBuyer() {
         return buyer;
     }
 
-    public void setBuyer(OwnerDTO buyer) {
+    public void setBuyer(String buyer) {
         this.buyer = buyer;
     }
 
-    public PropertyDTO getProperty() {
+    public int getProperty() {
         return property;
     }
 
-    public void setProperty(PropertyDTO property) {
+    public void setProperty(int property) {
         this.property = property;
     }
 

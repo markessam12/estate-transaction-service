@@ -8,8 +8,7 @@ import java.util.List;
 
 @XmlRootElement(name = "owner")
 public class OwnerDTO {
-    @XmlAttribute
-    private int accountId;
+    private String userName;
     private String firstName;
 
     private String lastName;
@@ -25,12 +24,12 @@ public class OwnerDTO {
         this.ownedProperties = new ArrayList<>();
     }
 
-    public int getId() {
-        return accountId;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setId(String id) {
-        this.accountId = Integer.parseInt(id);
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getFirstName() {
