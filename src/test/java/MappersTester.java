@@ -1,6 +1,6 @@
-import com.example.model.dao.OwnerDAO;
-import com.example.model.dto.OwnerDTO;
-import com.example.model.mapper.OwnerMapper;
+import com.estate.model.dao.OwnerDAO;
+import com.estate.model.dto.OwnerDTO;
+import com.estate.model.mapper.OwnerMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
