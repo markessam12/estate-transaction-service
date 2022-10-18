@@ -31,9 +31,9 @@ public class AerospikeAccess<E> {
         setName.put(TransactionDAO.class, TRANSACTION);
     }
 
-    /*
-        These primary key names are these attributes annotated with @AerospikeKey
-        in their corresponding classes
+    /**
+     * A constant primary Key Map that maps each class type to it's primary key in the datab;ase.
+     * These primary keys are the names of the attributes annotated with @AerospikeKey in the classes.
      */
     public final static Map<Class, String> primaryKeyName = new HashMap<>();
     static{
@@ -78,14 +78,6 @@ public class AerospikeAccess<E> {
 
     public void deleteRecord(E record){
         mapper.delete(record);
-    }
-
-    public void deleteRecord(String id){
-        mapper.delete(type, id);
-    }
-
-    public void deleteRecord(int id){
-        mapper.delete(type, id);
     }
 
     public void updateRecord(E record ,String... bins){

@@ -69,4 +69,31 @@ public class TransactionService {
         );
         return transactions;
     }
+
+    public TransactionDAO makeTransaction(String buyerID, int propertyID){
+        OwnerDAO buyer, seller;
+        PropertyDAO property;
+        try{
+            buyer = OwnerService.getInstance().getOwner(buyerID);
+            property = PropertyService.getInstance().getProperty(propertyID);
+            seller = OwnerService.getInstance().getOwner(property.getPropertyOwner().getUserName());
+        }catch (Exception e){
+            // do something: return "Incorrect Id";
+            return null;
+        }
+        if(property.getForSale() == 0){
+            // throw exception:  return "Purchase fail! \nProperty not for sale.";
+        }
+        if(buyer.getBalance() < property.getCost()){
+            // throw exception return "Insufficient balance";
+        }
+        OwnerService.getInstance().addToOwnerBalance(seller, property.getCost());
+        OwnerService.getInstance().addToOwnerBalance(buyer, - property.getCost());
+        property.setPropertyOwner(buyer);
+        property.setForSale(0);
+        new AerospikeAccess<>(PropertyDAO.class).updateRecord(property);
+        TransactionDAO newTransaction = new TransactionDAO(seller, buyer, property);
+        new AerospikeAccess<TransactionDAO>(TransactionDAO.class).saveRecord(newTransaction);
+        return newTransaction;
+    }
 }

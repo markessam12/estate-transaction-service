@@ -57,4 +57,30 @@ public class OwnerService {
         aerospikeAccess.updateRecord(ownerUpdated, "firstName");
         return aerospikeAccess.getRecord(userName);
     }
+
+    public OwnerDAO addToOwnerBalance(String userName, long additionalBalance){
+        AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
+        OwnerDAO ownerDAO = aerospikeAccess.getRecord(userName);
+//        if(ownerDAO == null)
+//            throw new DataNotFoundException("Owner doesn't exist");
+        ownerDAO.setBalance(ownerDAO.getBalance() + additionalBalance);
+        aerospikeAccess.updateRecord(ownerDAO, "balance");
+        return ownerDAO;
+    }
+
+    public OwnerDAO addToOwnerBalance(OwnerDAO ownerDAO, long additionalBalance){
+        AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
+//        if(ownerDAO == null)
+//            throw new DataNotFoundException("Owner doesn't exist");
+        ownerDAO.setBalance(ownerDAO.getBalance() + additionalBalance);
+        aerospikeAccess.updateRecord(ownerDAO, "balance");
+        return ownerDAO;
+    }
+
+    public OwnerDAO addOwner(String userName, String firstName, String lastName, long balance){
+        OwnerDAO newOwner = new OwnerDAO(userName, firstName, lastName, balance);
+        AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
+        aerospikeAccess.saveRecord(newOwner);
+        return newOwner;
+    }
 }
