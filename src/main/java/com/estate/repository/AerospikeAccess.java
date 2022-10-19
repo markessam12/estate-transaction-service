@@ -9,22 +9,21 @@ import com.estate.model.dao.OwnerDAO;
 import com.estate.model.dao.PropertyDAO;
 import com.estate.model.dao.TransactionDAO;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AerospikeAccess<E> {
-    public final static AerospikeClient client = new AerospikeClient("localhost", 3000);
-    public final static AeroMapper mapper = new AeroMapper.Builder(client).build();
+    public static final AerospikeClient client = new AerospikeClient("localhost", 3000);
+    public static final AeroMapper mapper = new AeroMapper.Builder(client).build();
 
-    public final static String NAMESPACE = "test";
-    public final static String PROPERTY = "property";
-    public final static String OWNERSHIP = "owner";
-    public final static String TRANSACTION = "transaction";
+    public static final String NAMESPACE = "test";
+    public static final String PROPERTY = "property";
+    public static final String OWNERSHIP = "owner";
+    public static final String TRANSACTION = "transaction";
 
-    public final static Map<Class, String> setName = new HashMap<>();
+    private static final Map<Class<?>, String> setName = new HashMap<>();
     static{
         setName.put(PropertyDAO.class, PROPERTY);
         setName.put(OwnerDAO.class, OWNERSHIP);
@@ -35,7 +34,7 @@ public class AerospikeAccess<E> {
      * A constant primary Key Map that maps each class type to it's primary key in the datab;ase.
      * These primary keys are the names of the attributes annotated with @AerospikeKey in the classes.
      */
-    public final static Map<Class, String> primaryKeyName = new HashMap<>();
+    private static final Map<Class<?>, String> primaryKeyName = new HashMap<>();
     static{
         primaryKeyName.put(PropertyDAO.class, "propertyId");
         primaryKeyName.put(OwnerDAO.class, "userName");
@@ -54,8 +53,8 @@ public class AerospikeAccess<E> {
         stmt.setSetName(setName.get(type));
         try (RecordSet recordSet = client.query(null, stmt)) {
             while (recordSet.next()) {
-                Record record = recordSet.getRecord();
-                Object key = record.bins.get(primaryKeyName.get(type));
+                Record aerospikeRecord = recordSet.getRecord();
+                Object key = aerospikeRecord.bins.get(primaryKeyName.get(type));
                 setRecords.add(getRecord(key));
             }
         }
@@ -72,15 +71,15 @@ public class AerospikeAccess<E> {
 
     public void deleteRecords(@NotNull List<E> records){
         if(!records.isEmpty())
-            for(E record : records)
-                deleteRecord(record);
+            for(E aerospikeRecord : records)
+                deleteRecord(aerospikeRecord);
     }
 
-    public void deleteRecord(E record){
-        mapper.delete(record);
+    public void deleteRecord(E aerospikeRecord){
+        mapper.delete(aerospikeRecord);
     }
 
-    public void updateRecord(E record ,String... bins){
-        mapper.update(record, bins);
+    public void updateRecord(E aerospikeRecord ,String... bins){
+        mapper.update(aerospikeRecord, bins);
     }
 }

@@ -4,23 +4,23 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class ErrorMessage {
-    private String errorMessage;
+    private String message;
     private int errorCode;
 
     public ErrorMessage(){}
 
-    public ErrorMessage(String errorMessage, int errorCode){
+    public ErrorMessage(String message, int errorCode){
         super();
-        this.errorMessage = errorMessage;
+        this.message = message;
         this.errorCode = errorCode;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getMessage() {
+        return message;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public int getErrorCode() {

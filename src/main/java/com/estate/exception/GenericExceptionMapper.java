@@ -1,4 +1,4 @@
-package com.estate.Exception;
+package com.estate.exception;
 
 import com.estate.model.ErrorMessage;
 import jakarta.ws.rs.core.Response;
@@ -10,7 +10,6 @@ import jakarta.ws.rs.ext.Provider;
  */
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
-
     @Override
     public Response toResponse(Throwable exception) {
         ErrorMessage errorMessage = new ErrorMessage(exception.getMessage(), 500);

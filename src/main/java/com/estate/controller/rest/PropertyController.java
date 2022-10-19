@@ -1,9 +1,11 @@
 package com.estate.controller.rest;
 
+import com.estate.exception.DataNotFoundException;
+import com.estate.model.ErrorMessage;
 import com.estate.model.dao.PropertyDAO;
 import com.estate.model.dto.PropertyDTO;
 import com.estate.model.mapper.PropertyMapper;
-import com.estate.repository.HypermediaCreator;
+import com.estate.service.HypermediaAdder;
 import com.estate.service.PropertyService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
@@ -13,53 +15,73 @@ import java.util.List;
 public class PropertyController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllProperties(@Context UriInfo uriInfo){
-        List<PropertyDTO> propertyList = PropertyMapper.INSTANCE.propertyListDaoToDto(
-                PropertyService.getInstance().getAllProperties()
-        );
-        HypermediaCreator hypermediaCreator = new HypermediaCreator(uriInfo);
+    public Response getAllProperties(@Context UriInfo uriInfo) {
+        List<PropertyDTO> propertyList;
+        try {
+            propertyList = PropertyMapper.INSTANCE.propertyListDaoToDto(
+                    PropertyService.getInstance().getAllProperties());
+        } catch (DataNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage(e.getMessage(), 404))
+                    .build();
+        }
         propertyList.forEach(
-                property -> property.setLinks(
-                        hypermediaCreator.requestUri(Integer.toString(property.getPropertyId()), "self").build()
-                )
-        );
-        return Response.ok(propertyList).links(hypermediaCreator.makeSelfLink()).build();
+                property -> HypermediaAdder.addLink(
+                        uriInfo,
+                        property,
+                        "properties/" + property.getPropertyId(),
+                        "self"));
+        return Response.ok(propertyList).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProperty(@PathParam("id") int id, @Context UriInfo uriInfo){
-        PropertyDTO property = PropertyMapper.INSTANCE.propertyDaoToDto(
-                PropertyService.getInstance().getProperty(id)
-        );
-        HypermediaCreator hypermediaCreator = new HypermediaCreator(uriInfo);
-        property.setLinks(
-                hypermediaCreator.baseUri("/owners/" + property.getPropertyOwner(), "owner").build()
-        );
-        return Response.ok(property).links(hypermediaCreator.makeSelfLink()).build();
+    public Response getProperty(@PathParam("id") int id, @Context UriInfo uriInfo) {
+        PropertyDTO property;
+        try {
+            property = PropertyMapper.INSTANCE.propertyDaoToDto(
+                    PropertyService.getInstance().getProperty(id));
+        } catch (DataNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage(e.getMessage(), 404))
+                    .build();
+        }
+        HypermediaAdder.addLink(uriInfo, property, "/owners/" + property.getPropertyOwner(), "self");
+        return Response.ok(property).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
-    @PATCH
+    @PUT
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response changePropertyCostAndForSale(@PathParam("id") int id, @Context UriInfo uriInfo, PropertyDTO propertyDTO){
         PropertyDAO propertyUpdatedDAO = PropertyMapper.INSTANCE.propertyDtoToDao(propertyDTO);
-        propertyUpdatedDAO = PropertyService.getInstance().updateProperty(propertyUpdatedDAO, id);
+        try {
+            propertyUpdatedDAO = PropertyService.getInstance().updateProperty(propertyUpdatedDAO, id);
+        } catch (DataNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage(e.getMessage(), 404))
+                    .build();
+        }
         PropertyDTO propertyUpdatedDTO = PropertyMapper.INSTANCE.propertyDaoToDto(propertyUpdatedDAO);
-        HypermediaCreator hypermediaCreator = new HypermediaCreator(uriInfo);
-        propertyUpdatedDTO.setLinks(
-                hypermediaCreator.baseUri("/owners/" + propertyUpdatedDTO.getPropertyOwner(), "owner").build()
-        );
-        return Response.ok(propertyUpdatedDTO).links(hypermediaCreator.makeSelfLink()).build();
+        HypermediaAdder.addLink(uriInfo, propertyDTO, "/owners/" + propertyUpdatedDTO.getPropertyOwner(), "info");
+        return Response.accepted(propertyUpdatedDTO).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
     @DELETE
     @Path("{id}")
     @Produces("application/json")
-    public PropertyDTO deleteProperty(@PathParam("id") int id){
-        PropertyDAO property = PropertyService.getInstance().deleteProperty(id);
-        return PropertyMapper.INSTANCE.propertyDaoToDto(property);
+    public Response deleteProperty(@PathParam("id") int id){
+        PropertyDAO property;
+        try {
+            property = PropertyService.getInstance().deleteProperty(id);
+        } catch (DataNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage(e.getMessage(), 404))
+                    .build();
+        }
+        PropertyDTO propertyUpdatedDTO = PropertyMapper.INSTANCE.propertyDaoToDto(property);
+        return Response.accepted(propertyUpdatedDTO).build();
     }
 }

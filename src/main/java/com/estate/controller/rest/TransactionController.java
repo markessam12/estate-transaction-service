@@ -1,9 +1,11 @@
 package com.estate.controller.rest;
 
+import com.estate.exception.DataNotFoundException;
+import com.estate.model.ErrorMessage;
 import com.estate.model.dao.TransactionDAO;
 import com.estate.model.dto.TransactionDTO;
 import com.estate.model.mapper.TransactionMapper;
-import com.estate.repository.HypermediaCreator;
+import com.estate.service.HypermediaAdder;
 import com.estate.service.TransactionService;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -18,10 +20,19 @@ import java.util.ArrayList;
 public class TransactionController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllTransactions(@Context UriInfo uriInfo){
-        ArrayList<TransactionDAO> transactionsDAO = TransactionService.getInstance().getTransactions();
+    public Response getAllTransactions(@Context UriInfo uriInfo) {
+        ArrayList<TransactionDAO> transactionsDAO;
+        try {
+            transactionsDAO = TransactionService.getInstance().getTransactions();
+        } catch (DataNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorMessage(e.getMessage(), 404))
+                    .build();
+        }
         ArrayList<TransactionDTO> transactionsDTO = TransactionMapper.INSTANCE.transactionListDaoToDto(transactionsDAO);
-        transactionsDTO = TransactionService.getInstance().addHypermediaToTransactions(transactionsDTO, uriInfo);
-        return Response.ok(transactionsDTO).links(new HypermediaCreator(uriInfo).makeSelfLink()).build();
+        TransactionService.getInstance().addHypermediaToTransactions(transactionsDTO, uriInfo);
+        return Response.created(HypermediaAdder.getSelfLink(uriInfo).getUri())
+                .entity(transactionsDTO)
+                .build();
     }
 }
