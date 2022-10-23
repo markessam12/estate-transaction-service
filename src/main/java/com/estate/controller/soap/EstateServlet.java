@@ -5,12 +5,15 @@ import java.io.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
-@WebServlet(name = "helloServlet", value = "/hello-servlet")
+/**
+ * The web servlet that initiates the soap service.
+ */
+@WebServlet(name = "estateServlet", value = "/estate-servlet")
 public class EstateServlet extends HttpServlet {
     private String message;
 
     public void init() {
-        message = "Hello World!";
+        message = "Estate Application";
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {

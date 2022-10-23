@@ -10,31 +10,31 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * The singleton class representing the property service layer and
+ * providing all property services to the Controller layer
+ */
 public class PropertyService {
     private static final PropertyService INSTANCE = new PropertyService();
 
     private PropertyService(){}
 
+    /**
+     * Get the singleton instance of the property service.
+     *
+     * @return the property service instance
+     */
     public static PropertyService getInstance(){
         return INSTANCE;
     }
 
-    public ArrayList<PropertyDAO> getAllProperties() throws DataNotFoundException{
-        AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
-        ArrayList<PropertyDAO> properties = aerospikeAccess.getSet();
-        if(properties.isEmpty())
-            throw new DataNotFoundException("There is no records for any property in the database.");
-        return properties;
-    }
-
-    public PropertyDAO getProperty(int propertyId) throws DataNotFoundException{
-        AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
-        PropertyDAO property = aerospikeAccess.getRecord(propertyId);
-        if(property == null)
-            throw new DataNotFoundException("Property not found!");
-        return property;
-    }
-
+    /**
+     * Gets all properties of a specific owner.
+     *
+     * @param userName the username
+     * @return the list of properties of owner
+     * @throws DataNotFoundException the data not found exception
+     */
     public ArrayList<PropertyDAO> getPropertiesOfOwner(String userName) throws DataNotFoundException {
         ArrayList<PropertyDAO> properties = getAllProperties();
         ArrayList<PropertyDAO> ownerProperties = properties.stream()
@@ -45,6 +45,42 @@ public class PropertyService {
         return ownerProperties;
     }
 
+    /**
+     * Gets all properties in the database.
+     *
+     * @return the list of properties
+     * @throws DataNotFoundException the data not found exception
+     */
+    public ArrayList<PropertyDAO> getAllProperties() throws DataNotFoundException{
+        AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
+        ArrayList<PropertyDAO> properties = aerospikeAccess.getSet();
+        if(properties.isEmpty())
+            throw new DataNotFoundException("There is no records for any property in the database.");
+        return properties;
+    }
+
+    /**
+     * Gets a specific property from the database.
+     *
+     * @param propertyId he unique property id
+     * @return the retrieved property
+     * @throws DataNotFoundException the data not found exception
+     */
+    public PropertyDAO getProperty(int propertyId) throws DataNotFoundException{
+        AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
+        PropertyDAO property = aerospikeAccess.getRecord(propertyId);
+        if(property == null)
+            throw new DataNotFoundException("Property not found!");
+        return property;
+    }
+
+    /**
+     * Delete a specific property from the database.
+     *
+     * @param propertyId the unique property id
+     * @return the deleted property
+     * @throws DataNotFoundException the data not found exception
+     */
     public PropertyDAO deleteProperty(int propertyId) throws DataNotFoundException{
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(propertyId);
@@ -55,6 +91,14 @@ public class PropertyService {
         return property;
     }
 
+    /**
+     * Update a specific property in the database.
+     *
+     * @param propertyUpdated the updated property data sent from controller layer
+     * @param id              the unique property id
+     * @return the updated property data retrieved from database
+     * @throws DataNotFoundException the data not found exception
+     */
     public PropertyDAO updateProperty(PropertyDAO propertyUpdated, int id) throws DataNotFoundException {
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(id);
@@ -67,6 +111,15 @@ public class PropertyService {
         return property;
     }
 
+    /**
+     * Add a new property to the database.
+     *
+     * @param ownerUserName   the owner username
+     * @param propertyAddress the property address
+     * @param cost            the cost
+     * @return the new property data
+     * @throws DataNotFoundException the data not found exception
+     */
     public PropertyDAO addProperty(String ownerUserName, String propertyAddress, long cost) throws DataNotFoundException{
         AerospikeAccess<PropertyDAO> aerospikePropertyAccess = new AerospikeAccess<>(PropertyDAO.class);
         OwnerDAO owner = OwnerService.getInstance().getOwner(ownerUserName);
