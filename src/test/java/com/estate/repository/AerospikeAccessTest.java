@@ -6,16 +6,25 @@ import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
+/**
+ * Unit test Naming Convention used is the first one in this <a href="https://dzone.com/articles/7-popular-unit-test-naming">website</a>
+ * Please take note of the following best practices when making unit tests:
+ * 1. Tests shouldn't have try/catch blocks
+ * 2. Each test should contain only 1 assertion
+ * 3. Tests shouldn't depend on each others nor have a specific order
+ */
 class AerospikeAccessTest {
-    OwnerDAO ownerStub = new OwnerDAO("markessam12", "Mark", "Essam", 2500);
-    PropertyDAO propertyStub = new PropertyDAO(1, "12 cairo egypt", ownerStub, 1235);
-    AerospikeAccess<OwnerDAO> aerospikeOwnerAccessStub = new AerospikeAccess<>(OwnerDAO.class);
-    AerospikeAccess<PropertyDAO> aerospikePropertyAccessStub = new AerospikeAccess<>(PropertyDAO.class);
+    static AerospikeAccess<OwnerDAO> aerospikeOwnerAccessStub = new AerospikeAccess<>(OwnerDAO.class);
+    static AerospikeAccess<PropertyDAO> aerospikePropertyAccessStub = new AerospikeAccess<>(PropertyDAO.class);
 
     @BeforeAll
     static void setUp() {
         AerospikeAccess.truncateDatabase();
+        OwnerDAO owner = new OwnerDAO("user1", "firstName", "lastName", 200);
+        aerospikeOwnerAccessStub.saveRecord(owner);
+        aerospikePropertyAccessStub.saveRecord(
+            new PropertyDAO(1, "address1", owner, 100)
+        );
     }
 
     @AfterAll
@@ -24,56 +33,64 @@ class AerospikeAccessTest {
     }
 
     @Test
-    void Test01_saveAndReadOwner() {
-        aerospikeOwnerAccessStub.saveRecord(ownerStub);
-        OwnerDAO retrieved = aerospikeOwnerAccessStub.getRecord("markessam12");
-        assertEquals(ownerStub.getUserName(),retrieved.getUserName(),"owner username saved in database is incorrect");
-        assertEquals(ownerStub.getFirstName(),retrieved.getFirstName(),"owner firstname saved in database is incorrect");
-        assertEquals(ownerStub.getLastName(),retrieved.getLastName(),"owner lastname saved in database is incorrect");
-        assertEquals(ownerStub.getBalance(),retrieved.getBalance(),"owner balance saved in database is incorrect");
+    void saveAndReadOwner_NewOwner_ConsistentData() {
+        OwnerDAO saved, retrieved;
+        saved = new OwnerDAO("user2", "firstName2", "lastName2", 100);
+        aerospikeOwnerAccessStub.saveRecord(saved);
+        retrieved = aerospikeOwnerAccessStub.getRecord(saved.getUserName());
+        assertTrue(saved.getUserName().equals(retrieved.getUserName()) &&
+                saved.getFirstName().equals(retrieved.getFirstName()) &&
+                saved.getLastName().equals(retrieved.getLastName()) &&
+                saved.getBalance() == retrieved.getBalance(),
+                "owner data saved then retrieved is not consistent");
     }
 
     @Test
-    void Test02_saveAndReadProperty() {
-        aerospikePropertyAccessStub.saveRecord(propertyStub);
-        PropertyDAO retrieved = aerospikePropertyAccessStub.getRecord(1);
-        assertEquals(propertyStub.getPropertyId(),retrieved.getPropertyId(),"property id saved in database is incorrect");
-        assertEquals(propertyStub.getAddress(),retrieved.getAddress(),"property address saved in database is incorrect");
-        assertEquals(propertyStub.getCost(),retrieved.getCost(),"property cost saved in database is incorrect");
-        assertEquals(ownerStub.getUserName(),retrieved.getPropertyOwner().getUserName(),"property owner saved in database is incorrect");
+    void saveAndReadProperty_NewProperty_ConsistentData() {
+        OwnerDAO owner = aerospikeOwnerAccessStub.getRecord("user1");
+        PropertyDAO saved = new PropertyDAO(2,"address2", owner,100);
+        aerospikePropertyAccessStub.saveRecord(saved);
+        PropertyDAO retrieved = aerospikePropertyAccessStub.getRecord(2);
+        assertTrue(
+            saved.getPropertyId() == retrieved.getPropertyId() &&
+            saved.getAddress().equals(retrieved.getAddress()) &&
+            saved.getCost() == retrieved.getCost() &&
+            saved.getPropertyOwner().getUserName().equals(retrieved.getPropertyOwner().getUserName()),
+            "property data saved then retrieved is not consistent");
     }
 
     @Test
-    void Test03_updateOwnerRecord() {
-        ownerStub.setFirstName("Marko");
-        ownerStub.setLastName("Eso");
-        ownerStub.setBalance(3150);
-        aerospikeOwnerAccessStub.updateRecord(ownerStub);
-        OwnerDAO retrivedUpdatedOwner = aerospikeOwnerAccessStub.getRecord(ownerStub.getUserName());
-        assertEquals(ownerStub.getBalance(),retrivedUpdatedOwner.getBalance(),"owner balance wasn't changed in database");
-        assertEquals(ownerStub.getFirstName(),retrivedUpdatedOwner.getFirstName(),"owner firstname wasn't changed in database");
-        assertEquals(ownerStub.getLastName(),retrivedUpdatedOwner.getLastName(),"owner lastname wasn't changed in database");
+    void updateOwner_OwnerExists_SuccessUpdate() {
+        OwnerDAO updated =  aerospikeOwnerAccessStub.getRecord("user1");
+        updated.setBalance(1000);
+        updated.setFirstName("newFirstName");
+        updated.setLastName("newLastName");
+        aerospikeOwnerAccessStub.updateRecord(updated);
+        OwnerDAO retrieved = aerospikeOwnerAccessStub.getRecord(updated.getUserName());
+        assertTrue(
+            updated.getBalance() == retrieved.getBalance() &&
+            updated.getFirstName().equals(retrieved.getFirstName()) &&
+            updated.getLastName().equals(retrieved.getLastName()),
+            "owner update wasn't reflected on database");
     }
 
     @Test
-    void Test04_addExtraUserAndGetSet() {
-        ownerStub.setUserName("mark12");
-        aerospikeOwnerAccessStub.saveRecord(ownerStub);
-        assertEquals(2, aerospikeOwnerAccessStub.getSet().size(), "Incorrect set size");
-        assertEquals(OwnerDAO.class, aerospikeOwnerAccessStub.getSet().get(0).getClass(), "incorrect set datatype");
-    }
-
-    @Test
-    void Test05_deletePropertyRecord() {
-        aerospikePropertyAccessStub.deleteRecord(propertyStub);
-        assertNull(aerospikeOwnerAccessStub.getRecord(propertyStub.getPropertyId()),"failed to delete record from the database");
-    }
-
-    @Test
-    void Test06_deleteAllRecords(){
-        aerospikeOwnerAccessStub.deleteRecords(
-                aerospikeOwnerAccessStub.getSet()
+    void getOwnersSet_MoreThanOneOwner_True() {
+        aerospikeOwnerAccessStub.saveRecord(
+            new OwnerDAO("user3", "firstName3", "lastName3", 1000)
         );
-        assertTrue(aerospikeOwnerAccessStub.getSet().isEmpty(), "failed to delete the set records");
+        assertTrue(
+            aerospikeOwnerAccessStub.getSet().size() >= 2  &&
+                OwnerDAO.class == aerospikeOwnerAccessStub.getSet().get(0).getClass(),
+            "incorrect set retrieved");
+    }
+
+    @Test
+    void deleteProperty_PropertyExist_DeletedSuccessfully() {
+        aerospikePropertyAccessStub.deleteRecord(
+            aerospikePropertyAccessStub.getRecord(1)
+        );
+        assertNull(aerospikeOwnerAccessStub.getRecord(1),
+            "failed to delete record from the database");
     }
 }

@@ -104,6 +104,7 @@ public class OwnerServiceImp implements OwnerService{
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
         if(aerospikeAccess.getRecord(userName) == null)
             throw new DataNotFoundException("Owner doesn't exist");
+        ownerUpdated.setUserName(userName);
         aerospikeAccess.updateRecord(ownerUpdated, "firstName", "lastName");
         return aerospikeAccess.getRecord(userName);
     }

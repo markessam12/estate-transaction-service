@@ -18,6 +18,13 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit test Naming Convention used is the first one in this <a href="https://dzone.com/articles/7-popular-unit-test-naming">website</a>
+ * Please take note of the following best practices when making unit tests:
+ * 1. Tests shouldn't have try/catch blocks
+ * 2. Each test should contain only 1 assertion
+ * 3. Tests shouldn't depend on each others nor have a specific order
+ */
 class TransactionServiceTest {
     @BeforeAll
     static void setup() throws DataAlreadyExistsException, DataNotFoundException, RequestFailedException {

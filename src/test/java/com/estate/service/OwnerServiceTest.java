@@ -8,11 +8,14 @@ import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//There is a bad practice here as tests shouldn't depend on each others nor have more than one assertion
-@TestMethodOrder(MethodOrderer.MethodName.class)
+/**
+ * Unit test Naming Convention used is the first one in this <a href="https://dzone.com/articles/7-popular-unit-test-naming">website</a>
+ * Please take note of the following best practices when making unit tests:
+ * 1. Tests shouldn't have try/catch blocks
+ * 2. Each test should contain only 1 assertion
+ * 3. Tests shouldn't depend on each others nor have a specific order
+ */
 class OwnerServiceTest {
-    OwnerDAO owner;
-
     @BeforeAll
     static void setUp() throws DataAlreadyExistsException {
         AerospikeAccess.truncateDatabase();
@@ -24,84 +27,91 @@ class OwnerServiceTest {
         AerospikeAccess.truncateDatabase();
     }
 
-    @BeforeEach
-    void setOwner() throws DataNotFoundException {
-        this.owner = OwnerServiceImp.getInstance().getOwner("user1");
-    }
-
     @Test
-    void Test01_serviceShouldBeSingleton() {
+    void getInstance_SingletonClass_ReturnSameInstance() {
         OwnerService ownerService = OwnerServiceImp.getInstance();
         assertEquals(ownerService, OwnerServiceImp.getInstance(),
                 "owner service should be singleton");
     }
 
     @Test
-    void Test02_addAndRetrieveOwnerUsingOwnerService() throws DataNotFoundException {
-        String username = "user1";
-        this.owner = OwnerServiceImp.getInstance().getOwner(username);
-        assertEquals(username, owner.getUserName(),
+    void addOwner_NewOwner_SuccessfulOwnerAddition()
+        throws DataNotFoundException, DataAlreadyExistsException {
+        String username = "user2";
+        OwnerServiceImp.getInstance().addOwner(username, "firstName2", "lastName2",1000);
+        OwnerDAO retrieved = OwnerServiceImp.getInstance().getOwner(username);
+        assertEquals(username, retrieved.getUserName(),
                 "Saved owner has different username");
     }
 
     @Test
-    void Test03_getAllOwnersUsingOwnerService() throws DataNotFoundException {
-            assertEquals(1, OwnerServiceImp.getInstance().getAllOwners().size(),
+    void getAllOwners_MoreThanOneOwnerExists_True()
+        throws DataNotFoundException, DataAlreadyExistsException {
+        OwnerServiceImp.getInstance().addOwner("user3", "firstName3", "lastName3",1000);
+        assertTrue(OwnerServiceImp.getInstance().getAllOwners().size() > 1,
                     "Owner service didn't retrieve the correct number of owners");
     }
 
 
     @Test
-    void Test04_addBalanceToOwner(){
+    void addBalance_OwnerExists_SuccessfulBalanceAddition() throws DataNotFoundException {
         assertDoesNotThrow(()-> {
-            OwnerServiceImp.getInstance().addToOwnerBalance(owner, 2000);
-        });
+            OwnerDAO owner = OwnerServiceImp.getInstance().getOwner("user1");
+            OwnerServiceImp.getInstance().addToOwnerBalance(owner, 2000);},
+            "Owner should be on database but couldn't be retrieved or edited");
+        assertEquals(
+            2000,
+            OwnerServiceImp.getInstance().getOwner("user1").getBalance(),
+            "Balance failed to update");
     }
 
     @Test
-    void Test05_changeOwnerFirstAndLastNames(){
+    void changeOwnerData_OwnerExists_OnlyNameIsUpdated() throws DataNotFoundException {
         assertDoesNotThrow(() -> {
-            owner.setFirstName("newFirstName");
-            owner.setLastName("newLastName");
-            OwnerServiceImp.getInstance().updateOwner(owner, "user1");
-        });
-    }
-
-    @Test
-    void Test06_ownerDataShouldBeUpdated(){
+            OwnerDAO updated = OwnerServiceImp.getInstance().getOwner("user1");
+            updated.setUserName("newUserName1");
+            updated.setFirstName("newFirstName");
+            updated.setLastName("newLastName");
+            updated.setBalance(999);
+            OwnerServiceImp.getInstance().updateOwner(updated, "user1");},
+            "Failed to get or updated an existing owner");
+        OwnerDAO retrieved = OwnerServiceImp.getInstance().getOwner("user1");
         assertTrue(
-                owner.getBalance() == 2000 &&
-                        owner.getFirstName().equals("newFirstName") &&
-                        owner.getLastName().equals("newLastName")
-        );
+            retrieved.getFirstName().equals("newFirstName") &&
+            retrieved.getLastName().equals("newLastName") &&
+            retrieved.getBalance() != 999,
+            "Owner wasn't updated correctly.");
     }
 
     @Test()
-    void Test07_deleteNonExistingOwnerUsingOwnerService(){
+    void deleteOwner_NonExistingOwner_ThrowsDataNotFound(){
         assertThrowsExactly(DataNotFoundException.class, () -> {
-            OwnerServiceImp.getInstance().deleteOwner("user2");
-        });
+            OwnerServiceImp.getInstance().deleteOwner("user12");},
+            "Deleting a non-existing owner should throw exception");
     }
 
     @Test()
-    void Test08_addExistingOwnerUsingOwnerService(){
+    void addOwner_ExistingOwner_ThrowDataAlreadyExists(){
         assertThrows(DataAlreadyExistsException.class, () -> {
-            OwnerServiceImp.getInstance().addOwner("user1", "firstName", "secondName", 0);
-        });
+            OwnerServiceImp.getInstance().addOwner("user1", "firstName", "secondName", 0);},
+            "Adding an existing owner should throw an exception");
     }
 
     @Test()
-    void Test09_updateNonExistingOwnerUsingOwnerService(){
-        owner.setBalance(6150);
+    void updateOwner_NonExistingOwner_ThrowDataNotFound(){
+        OwnerDAO updated = new OwnerDAO("user12","newFirstName","newLastName",2000);
         assertThrows(DataNotFoundException.class, () -> {
-            OwnerServiceImp.getInstance().updateOwner(owner, "user2");
-        });
+            OwnerServiceImp.getInstance().updateOwner(updated, "user12");},
+            "Updating non existing owner should throw an exception");
     }
 
     @Test
-    void Test10_deleteOwnerUsingOwnerService(){
+    void deleteOwner_ExistingOwner_SuccessfulDeletion() throws DataAlreadyExistsException {
+        OwnerServiceImp.getInstance().addOwner("userX","firstName", "lastName", 100000);
         assertDoesNotThrow(() -> {
-            OwnerServiceImp.getInstance().deleteOwner("user1");
-        });
+            OwnerServiceImp.getInstance().deleteOwner("userX");},
+            "Deleting an existing owner shouldn't throw and exception");
+        assertThrowsExactly(DataNotFoundException.class, () ->
+            OwnerServiceImp.getInstance().getOwner("userX"));
     }
 }
