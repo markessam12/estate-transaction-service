@@ -6,7 +6,7 @@ import com.estate.model.dao.TransactionDAO;
 import com.estate.model.dto.TransactionDTO;
 import com.estate.model.mapper.TransactionMapper;
 import com.estate.service.HypermediaAdder;
-import com.estate.service.TransactionService;
+import com.estate.service.TransactionServiceImp;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -23,14 +23,14 @@ public class TransactionController {
     public Response getAllTransactions(@Context UriInfo uriInfo) {
         ArrayList<TransactionDAO> transactionsDAO;
         try {
-            transactionsDAO = TransactionService.getInstance().getTransactions();
+            transactionsDAO = TransactionServiceImp.getInstance().getTransactions();
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
                     .build();
         }
         ArrayList<TransactionDTO> transactionsDTO = TransactionMapper.INSTANCE.transactionListDaoToDto(transactionsDAO);
-        TransactionService.getInstance().addHypermediaToTransactions(transactionsDTO, uriInfo);
+        TransactionServiceImp.getInstance().addHypermediaToTransactions(transactionsDTO, uriInfo);
         return Response.created(HypermediaAdder.getSelfLink(uriInfo).getUri())
                 .entity(transactionsDTO)
                 .build();

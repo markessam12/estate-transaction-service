@@ -12,9 +12,9 @@ import com.estate.model.mapper.OwnerMapper;
 import com.estate.model.mapper.PropertyMapper;
 import com.estate.model.mapper.TransactionMapper;
 import com.estate.service.HypermediaAdder;
-import com.estate.service.OwnerService;
-import com.estate.service.PropertyService;
-import com.estate.service.TransactionService;
+import com.estate.service.OwnerServiceImp;
+import com.estate.service.PropertyServiceImp;
+import com.estate.service.TransactionServiceImp;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class OwnerController {
         ArrayList<OwnerDTO> owners;
         try {
             owners = OwnerMapper.INSTANCE.ownerListDaoToDto(
-                    OwnerService.getInstance().getAllOwners());
+                    OwnerServiceImp.getInstance().getAllOwners());
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -44,7 +44,7 @@ public class OwnerController {
         OwnerDTO ownerDTO;
         try {
             ownerDTO = OwnerMapper.INSTANCE.ownerDaoToDto(
-                    OwnerService.getInstance().getOwner(userName));
+                    OwnerServiceImp.getInstance().getOwner(userName));
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -53,7 +53,7 @@ public class OwnerController {
         ArrayList<PropertyDTO> ownerProperties;
         try {
             ownerProperties = PropertyMapper.INSTANCE.propertyListDaoToDto(
-                    PropertyService.getInstance().getPropertiesOfOwner(userName));
+                    PropertyServiceImp.getInstance().getPropertiesOfOwner(userName));
             ownerProperties.forEach(propertyDTO ->
                             HypermediaAdder.addLink(
                                     uriInfo,
@@ -73,7 +73,7 @@ public class OwnerController {
     public Response deleteOwner(@PathParam("username") String userName) {
         OwnerDAO owner;
         try {
-            owner = OwnerService.getInstance().deleteOwner(userName);
+            owner = OwnerServiceImp.getInstance().deleteOwner(userName);
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -94,7 +94,7 @@ public class OwnerController {
         ownerDTO.setUserName(userName);
         OwnerDAO ownerUpdatedDAO = OwnerMapper.INSTANCE.ownerDtoToDao(ownerDTO);
         try {
-            OwnerService.getInstance().updateOwner(ownerUpdatedDAO, userName);
+            OwnerServiceImp.getInstance().updateOwner(ownerUpdatedDAO, userName);
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -112,15 +112,15 @@ public class OwnerController {
         OwnerDAO owner;
         ArrayList<TransactionDAO> ownerTransactionsDAO;
         try {
-            owner = OwnerService.getInstance().getOwner(userName);
-            ownerTransactionsDAO = TransactionService.getInstance().getOwnerTransactions(owner);
+            owner = OwnerServiceImp.getInstance().getOwner(userName);
+            ownerTransactionsDAO = TransactionServiceImp.getInstance().getOwnerTransactions(owner);
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
                     .build();
         }
         ArrayList<TransactionDTO> ownerTransactionsDTO = TransactionMapper.INSTANCE.transactionListDaoToDto(ownerTransactionsDAO);
-        TransactionService.getInstance().addHypermediaToTransactions(ownerTransactionsDTO, uriInfo);
+        TransactionServiceImp.getInstance().addHypermediaToTransactions(ownerTransactionsDTO, uriInfo);
         return Response.ok(ownerTransactionsDTO).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 }

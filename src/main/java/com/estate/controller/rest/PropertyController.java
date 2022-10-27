@@ -6,7 +6,7 @@ import com.estate.model.dao.PropertyDAO;
 import com.estate.model.dto.PropertyDTO;
 import com.estate.model.mapper.PropertyMapper;
 import com.estate.service.HypermediaAdder;
-import com.estate.service.PropertyService;
+import com.estate.service.PropertyServiceImp;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.util.List;
@@ -19,7 +19,7 @@ public class PropertyController {
         List<PropertyDTO> propertyList;
         try {
             propertyList = PropertyMapper.INSTANCE.propertyListDaoToDto(
-                    PropertyService.getInstance().getAllProperties());
+                    PropertyServiceImp.getInstance().getAllProperties());
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -41,7 +41,7 @@ public class PropertyController {
         PropertyDTO property;
         try {
             property = PropertyMapper.INSTANCE.propertyDaoToDto(
-                    PropertyService.getInstance().getProperty(id));
+                    PropertyServiceImp.getInstance().getProperty(id));
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -58,7 +58,7 @@ public class PropertyController {
     public Response changePropertyCostAndForSale(@PathParam("id") int id, @Context UriInfo uriInfo, PropertyDTO propertyDTO){
         PropertyDAO propertyUpdatedDAO = PropertyMapper.INSTANCE.propertyDtoToDao(propertyDTO);
         try {
-            propertyUpdatedDAO = PropertyService.getInstance().updateProperty(propertyUpdatedDAO, id);
+            propertyUpdatedDAO = PropertyServiceImp.getInstance().updateProperty(propertyUpdatedDAO, id);
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
@@ -75,7 +75,7 @@ public class PropertyController {
     public Response deleteProperty(@PathParam("id") int id){
         PropertyDAO property;
         try {
-            property = PropertyService.getInstance().deleteProperty(id);
+            property = PropertyServiceImp.getInstance().deleteProperty(id);
         } catch (DataNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(new ErrorMessage(e.getMessage(), 404))
