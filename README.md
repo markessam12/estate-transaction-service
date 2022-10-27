@@ -42,7 +42,7 @@ Each property bought or sold will be stored as a transaction inside the database
 ### Get transactions in the database
 ![image](https://user-images.githubusercontent.com/63367712/198363987-376bad84-b8b9-4519-a90d-15004a44df1d.png)
 
-## In this project, the next topics were practices:
+## In this project, the next topics were practiced:
 1. Usage of the building tool gradle
 2. Exposing different rest apis and usage of different response codes
 3. Application of HATEOAS constraints
