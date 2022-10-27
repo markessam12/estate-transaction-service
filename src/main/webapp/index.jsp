@@ -5,10 +5,9 @@
     <title>JSP - Hello World</title>
 </head>
 <body>
-<h1><%= "Estate Application" %>
+<h1><%= "Hello World!" %>
 </h1>
-<p>This application is a system used for buying and selling properties between different owners.</p>
 <br/>
-<a href="estate-servlet">Estate Servlet</a>
+<a href="hello-servlet">Hello Servlet</a>
 </body>
 </html>

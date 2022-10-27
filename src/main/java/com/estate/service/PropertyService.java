@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import jdk.nashorn.internal.objects.Global;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the property service layer and
@@ -19,9 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class PropertyService {
     private static final PropertyService INSTANCE = new PropertyService();
-
-    private static final Logger logger
-        = LoggerFactory.getLogger(Global.class);
 
     private PropertyService(){}
 
@@ -48,7 +42,6 @@ public class PropertyService {
                 .collect(Collectors.toCollection(ArrayList::new));
         if(ownerProperties.isEmpty())
             throw new DataNotFoundException("Owner has no properties.");
-        logger.info("Retrieve all properties of owner {}", userName);
         return ownerProperties;
     }
 
@@ -63,7 +56,6 @@ public class PropertyService {
         ArrayList<PropertyDAO> properties = aerospikeAccess.getSet();
         if(properties.isEmpty())
             throw new DataNotFoundException("There is no records for any property in the database.");
-        logger.info("Retrieved the all properties in the database");
         return properties;
     }
 
@@ -77,11 +69,8 @@ public class PropertyService {
     public PropertyDAO getProperty(int propertyId) throws DataNotFoundException{
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(propertyId);
-        if(property == null){
-            logger.warn("Trying to access non existing property of id {}", propertyId);
+        if(property == null)
             throw new DataNotFoundException("Property not found!");
-        }
-        logger.info("Retrieved the property of id {}", propertyId);
         return property;
     }
 
@@ -99,7 +88,6 @@ public class PropertyService {
             throw new DataNotFoundException("Property to delete doesn't exist.");
         TransactionService.getInstance().deletePropertyTransactions(property);
         aerospikeAccess.deleteRecord(property);
-        logger.info("Property of id {} was deleted", propertyId);
         return property;
     }
 
@@ -115,13 +103,11 @@ public class PropertyService {
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(id);
         if(property == null){
-            logger.warn(" User tried to update non existing property of id {}", id);
             throw new DataNotFoundException("Property not found!");
         }
         property.setCost(propertyUpdated.getCost());
         property.setForSale(propertyUpdated.getForSale());
         aerospikeAccess.updateRecord(property);
-        logger.info("Updated cost and sale state of the property with id {}", property.getPropertyId());
         return property;
     }
 
@@ -136,11 +122,9 @@ public class PropertyService {
      */
     public PropertyDAO addProperty(String ownerUserName, String propertyAddress, long cost) throws DataNotFoundException{
         OwnerDAO owner = OwnerService.getInstance().getOwner(ownerUserName);
-        logger.info("Generating a new property Id");
         int newId = generateUniquePropertyId();
         PropertyDAO newProperty = new PropertyDAO(newId, propertyAddress, owner, cost);
         new AerospikeAccess<>(PropertyDAO.class).saveRecord(newProperty);
-        logger.info("New property of id {} was added to the database", newId);
         return newProperty;
     }
 

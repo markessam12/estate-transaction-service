@@ -8,13 +8,10 @@ import com.estate.model.dao.TransactionDAO;
 import com.estate.model.dto.TransactionDTO;
 import com.estate.repository.AerospikeAccess;
 import jakarta.ws.rs.core.UriInfo;
-import jdk.nashorn.internal.objects.Global;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the transaction service layer and
@@ -22,8 +19,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TransactionService {
     private static final TransactionService INSTANCE = new TransactionService();
-
-    private static final Logger logger = LoggerFactory.getLogger(Global.class);
 
     private TransactionService(){}
 
@@ -47,7 +42,6 @@ public class TransactionService {
         ArrayList<TransactionDAO> transactions = aerospikeAccess.getSet();
         if(transactions.isEmpty())
             throw new DataNotFoundException("There are no transactions.");
-        logger.info("Retrieved all transactions from the database.");
         return transactions;
     }
 
@@ -60,7 +54,6 @@ public class TransactionService {
     public void deleteOwnerTransactions(OwnerDAO owner) throws DataNotFoundException{
         ArrayList<TransactionDAO> ownerTransactions = getOwnerTransactions(owner);
         new AerospikeAccess<>(TransactionDAO.class).deleteRecords(ownerTransactions);
-        logger.warn("All transactions of owner {} was deleted", owner.getUserName());
     }
 
     /**
@@ -83,7 +76,6 @@ public class TransactionService {
             .collect(Collectors.toCollection(ArrayList::new));
         if(ownerTransactions.isEmpty())
             throw new DataNotFoundException("Owner has no transactions.");
-        logger.warn("Retrieved all the transactions of owner {}", owner.getUserName());
         return ownerTransactions;
     }
 
@@ -102,7 +94,6 @@ public class TransactionService {
             )
             .collect(Collectors.toCollection(ArrayList::new));
         aerospikeAccess.deleteRecords(propertyTransactions);
-        logger.warn("All transactions of property with id {} was deleted", property.getPropertyId());
     }
 
     /**
@@ -111,13 +102,13 @@ public class TransactionService {
      * @param transactionsDTO the transactions dto
      * @param uriInfo         the uri info
      */
-    public void addHypermediaToTransactions(@NotNull ArrayList<TransactionDTO> transactionsDTO, UriInfo uriInfo) {
+    public void addHypermediaToTransactions(@NotNull ArrayList<TransactionDTO> transactionsDTO, UriInfo uriInfo){
         transactionsDTO.forEach(transactionDTO ->
-            {
-                HypermediaAdder.addLink(uriInfo, transactionDTO, "/owners/" + transactionDTO.getBuyer(), "buyer");
-                HypermediaAdder.addLink(uriInfo, transactionDTO, "/owners/" + transactionDTO.getSeller(), "seller");
-                HypermediaAdder.addLink(uriInfo, transactionDTO, "/properties/" + transactionDTO.getProperty(), "property");
-            }
+                {
+                    HypermediaAdder.addLink(uriInfo, transactionDTO, "/owners/" + transactionDTO.getBuyer(), "buyer");
+                    HypermediaAdder.addLink(uriInfo, transactionDTO, "/owners/" + transactionDTO.getSeller(), "seller");
+                    HypermediaAdder.addLink(uriInfo, transactionDTO, "/properties/" + transactionDTO.getProperty(), "property");
+                }
         );
     }
 
@@ -147,7 +138,6 @@ public class TransactionService {
         new AerospikeAccess<>(PropertyDAO.class).updateRecord(property);
         TransactionDAO newTransaction = new TransactionDAO(seller, buyer, property);
         new AerospikeAccess<>(TransactionDAO.class).saveRecord(newTransaction);
-        logger.warn("Transaction added to database successfully.");
         return newTransaction;
     }
 }

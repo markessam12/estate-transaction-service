@@ -19,18 +19,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.util.ArrayList;
 
-/**
- * Owner controller is the presentation layer of the application.
- * It exposes the rest APIs related to owners
- */
 @Path("owners")
 public class OwnerController {
-    /**
-     * Get all owners in the database.
-     *
-     * @param uriInfo the uri info
-     * @return the http response
-     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllOwners(@Context UriInfo uriInfo){
@@ -47,13 +37,6 @@ public class OwnerController {
         return Response.ok(owners).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
-    /**
-     * Gets a specific owner from database using his username.
-     *
-     * @param userName the username
-     * @param uriInfo  the uri info
-     * @return the retrieved owner in dto presentation
-     */
     @GET
     @Path("{username}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -84,12 +67,6 @@ public class OwnerController {
             return Response.ok(ownerDTO).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
-    /**
-     * Delete an owner from the database.
-     *
-     * @param userName the username
-     * @return the deleted owner in dto presentation
-     */
     @DELETE
     @Path("{username}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -109,14 +86,6 @@ public class OwnerController {
         return Response.accepted(OwnerMapper.INSTANCE.ownerDaoToDto(owner)).build();
     }
 
-    /**
-     * Update owner response.
-     *
-     * @param userName the owner username
-     * @param ownerDTO the owner dto
-     * @param uriInfo  the uri info
-     * @return the updated owner in dto presentation
-     */
     @PUT
     @Path("{username}")
     @Consumes("application/json")
@@ -136,13 +105,6 @@ public class OwnerController {
         return Response.accepted(ownerUpdatedDTO).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
-    /**
-     * Gets all properties owned by a specific owner.
-     *
-     * @param userName the owner username
-     * @param uriInfo  the uri info
-     * @return the all owner properties in dto presentation
-     */
     @GET
     @Path("{username}/transactions")
     @Produces(MediaType.APPLICATION_JSON)

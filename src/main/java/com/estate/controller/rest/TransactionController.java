@@ -16,18 +16,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 
-/**
- * Transaction Controller is the presentation layer of the application.
- * It exposes the rest APIs related to transactions
- */
 @Path("transactions")
 public class TransactionController {
-    /**
-     * Gets all transactions in the database.
-     *
-     * @param uriInfo the uri info
-     * @return the all transactions in dto presentation
-     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllTransactions(@Context UriInfo uriInfo) {
