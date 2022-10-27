@@ -28,11 +28,11 @@ public class AerospikeAccess<E> {
     /**
      * The java client to aerospike database running on docker.
      */
-    private static AerospikeClient client;
+    private static AerospikeClient client = new AerospikeClient("localhost", 3000);
     /**
      * An aerospike object mapper to map java objects to database entities.
      */
-    private static AeroMapper mapper;
+    private static AeroMapper mapper = new AeroMapper.Builder(client).build();
 
     /**
      * The aerospike namespace where all the project sets are stored inside.
@@ -50,26 +50,6 @@ public class AerospikeAccess<E> {
      * The aerospike set name where all transactions records stored.
      */
     public static final String TRANSACTION = "transaction";
-
-//    //Initializing aerospike java client and mapper
-    static{
-        try (InputStream input = new FileInputStream("src/main/resources/config.properties")) {
-
-            Properties prop = new Properties();
-
-            // load a properties file
-            prop.load(input);
-
-            //use properties values
-            client = new AerospikeClient(
-                    prop.getProperty("db.hostname"),
-                    Integer.parseInt(prop.getProperty("db.port"))
-            );
-            mapper = new AeroMapper.Builder(client).build();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
     /**
      * A Map that maps each class type to the name of it's set inside the database.
