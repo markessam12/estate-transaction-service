@@ -16,6 +16,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The AerospikeAccess is a generic class that enables doing operations on any object type stored in aerospike.
@@ -31,6 +33,8 @@ public class AerospikeAccess<E> {
      * An aerospike object mapper to map java objects to database entities.
      */
     private static AeroMapper mapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(AerospikeAccess.class);
 
     /**
      * The aerospike namespace where all the project sets are stored inside.
@@ -49,7 +53,7 @@ public class AerospikeAccess<E> {
      */
     public static final String TRANSACTION = "transaction";
 
-    //Initializing aerospike java client and mapper
+//    //Initializing aerospike java client and mapper
     static{
         try (InputStream input = new FileInputStream("src/main/resources/config.properties")) {
 

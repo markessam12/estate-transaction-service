@@ -20,6 +20,8 @@ public class Utility {
      */
     public static @NotNull String getCurrentDate(){
         Date date = Calendar.getInstance().getTime();
+        long time = date.getTime();
+        System.out.println(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         return dateFormat.format(date);
     }

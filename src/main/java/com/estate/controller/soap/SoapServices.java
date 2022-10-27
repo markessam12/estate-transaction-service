@@ -64,8 +64,9 @@ public class SoapServices {
      */
     @WebMethod(operationName = "add_balance_to_owner")
     public OwnerDTO addBalance(String userName, int balance) throws DataNotFoundException {
-        OwnerDAO ownerDAO = OwnerService.getInstance().getOwner(userName);
-        ownerDAO = OwnerService.getInstance().addToOwnerBalance(ownerDAO, balance);
+        OwnerDAO ownerDAO = OwnerService.getInstance().addToOwnerBalance(
+            OwnerService.getInstance().getOwner(userName),
+            balance);
         return OwnerMapper.INSTANCE.ownerDaoToDto(ownerDAO);
     }
 

@@ -6,6 +6,8 @@ import com.estate.exception.RequestFailedException;
 import com.estate.model.dao.OwnerDAO;
 import com.estate.repository.AerospikeAccess;
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the owner service layer and
@@ -13,6 +15,9 @@ import java.util.ArrayList;
  */
 public class OwnerService {
     private static final OwnerService INSTANCE = new OwnerService();
+
+//    private static final Logger logger
+//        = LoggerFactory.getLogger(OwnerService.class);
 
     private OwnerService(){}
 
@@ -36,6 +41,7 @@ public class OwnerService {
         ArrayList<OwnerDAO> owners = aerospikeAccess.getSet();
         if(owners.isEmpty())
             throw new DataNotFoundException("There is no records for any owner in the database yet.");
+//        logger.info("Owners list retrieved from database");
         return owners;
     }
 
@@ -51,6 +57,7 @@ public class OwnerService {
         OwnerDAO owner = aerospikeAccess.getRecord(userName);
         if(owner == null)
             throw new DataNotFoundException("Owner not found!");
+//        logger.info("Owner {} was retrieved from database",owner.getUserName());
         return owner;
     }
 
@@ -64,15 +71,19 @@ public class OwnerService {
      */
     public OwnerDAO deleteOwner(String userName) throws RequestFailedException, DataNotFoundException {
         OwnerDAO owner = getOwner(userName);
-        if(isOwnerHasProperties(userName))
+        if(isOwnerHasProperties(userName)){
             throw new RequestFailedException("Can't delete an owner that has properties.");
+        }
+
         try{
             TransactionService.getInstance().deleteOwnerTransactions(owner);
+//            logger.warn("All transactions of owner {} was deleted from database", owner.getUserName());
         }catch (DataNotFoundException ignored){
             //This means the owner already has no transactions to delete
         }
 
         new AerospikeAccess<>(OwnerDAO.class).deleteRecord(owner);
+//        logger.info("Owner {} was deleted from database",owner.getUserName());
         return owner;
     }
 
