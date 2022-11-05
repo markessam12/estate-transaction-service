@@ -13,11 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 
 /**
  * The AerospikeAccess is a generic class that enables doing operations on any object type stored in aerospike.
@@ -33,6 +31,8 @@ public class AerospikeAccess<E> {
      * An aerospike object mapper to map java objects to database entities.
      */
     private static AeroMapper mapper = new AeroMapper.Builder(client).build();
+
+    private static final Logger logger = LoggerFactory.getLogger(AerospikeAccess.class);
 
     /**
      * The aerospike namespace where all the project sets are stored inside.

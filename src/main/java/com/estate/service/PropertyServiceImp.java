@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the property service layer and
@@ -16,6 +18,9 @@ import java.util.stream.Collectors;
  */
 public class PropertyServiceImp implements PropertyService{
     private static final PropertyServiceImp INSTANCE = new PropertyServiceImp();
+
+    private static final Logger logger
+        = LoggerFactory.getLogger(PropertyServiceImp.class);
 
     private PropertyServiceImp(){}
 
@@ -37,11 +42,13 @@ public class PropertyServiceImp implements PropertyService{
      */
     public ArrayList<PropertyDAO> getPropertiesOfOwner(String userName) throws DataNotFoundException {
         ArrayList<PropertyDAO> properties = getAllProperties();
+        logger.info("Retrieving all properties of owner {}", userName);
         ArrayList<PropertyDAO> ownerProperties = properties.stream()
                 .filter(propertyDAO -> propertyDAO.getPropertyOwner().getUserName().equals(userName))
                 .collect(Collectors.toCollection(ArrayList::new));
-        if(ownerProperties.isEmpty())
+        if(ownerProperties.isEmpty()){
             throw new DataNotFoundException("Owner has no properties.");
+        }
         return ownerProperties;
     }
 
@@ -52,6 +59,7 @@ public class PropertyServiceImp implements PropertyService{
      * @throws DataNotFoundException the data not found exception
      */
     public ArrayList<PropertyDAO> getAllProperties() throws DataNotFoundException{
+        logger.info("Retrieving all properties in the database.");
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         ArrayList<PropertyDAO> properties = aerospikeAccess.getSet();
         if(properties.isEmpty())
@@ -67,10 +75,13 @@ public class PropertyServiceImp implements PropertyService{
      * @throws DataNotFoundException the data not found exception
      */
     public PropertyDAO getProperty(int propertyId) throws DataNotFoundException{
+        logger.info("Retrieving property {}", propertyId);
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(propertyId);
-        if(property == null)
+        if(property == null){
+            logger.warn("Failed to retrieve property {}, property not found!", propertyId);
             throw new DataNotFoundException("Property not found!");
+        }
         return property;
     }
 
@@ -82,10 +93,13 @@ public class PropertyServiceImp implements PropertyService{
      * @throws DataNotFoundException the data not found exception
      */
     public PropertyDAO deleteProperty(int propertyId) throws DataNotFoundException{
+        logger.info("Attempting to delete property {}", propertyId);
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(propertyId);
-        if(property == null)
+        if(property == null){
+            logger.warn("Failed to delete property {}, property not found!", propertyId);
             throw new DataNotFoundException("Property to delete doesn't exist.");
+        }
         TransactionServiceImp.getInstance().deletePropertyTransactions(property);
         aerospikeAccess.deleteRecord(property);
         return property;
@@ -100,9 +114,11 @@ public class PropertyServiceImp implements PropertyService{
      * @throws DataNotFoundException the data not found exception
      */
     public PropertyDAO updateProperty(PropertyDAO propertyUpdated, int id) throws DataNotFoundException {
+        logger.info("Updating property {}", id);
         AerospikeAccess<PropertyDAO> aerospikeAccess = new AerospikeAccess<>(PropertyDAO.class);
         PropertyDAO property = aerospikeAccess.getRecord(id);
         if(property == null){
+            logger.warn("Failed to delete property {}, property not found!", id);
             throw new DataNotFoundException("Property not found!");
         }
         property.setCost(propertyUpdated.getCost());
@@ -121,6 +137,7 @@ public class PropertyServiceImp implements PropertyService{
      * @throws DataNotFoundException the data not found exception
      */
     public PropertyDAO addProperty(String ownerUserName, String propertyAddress, long cost) throws DataNotFoundException{
+        logger.info("Adding new property");
         OwnerDAO owner = OwnerServiceImp.getInstance().getOwner(ownerUserName);
         int newId = generateUniquePropertyId();
         PropertyDAO newProperty = new PropertyDAO(newId, propertyAddress, owner, cost);

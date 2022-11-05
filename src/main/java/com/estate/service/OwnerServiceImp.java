@@ -6,6 +6,8 @@ import com.estate.exception.RequestFailedException;
 import com.estate.model.dao.OwnerDAO;
 import com.estate.repository.AerospikeAccess;
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the owner service layer and
@@ -13,6 +15,10 @@ import java.util.ArrayList;
  */
 public class OwnerServiceImp implements OwnerService{
     private static final OwnerServiceImp INSTANCE = new OwnerServiceImp();
+
+    private static final Logger logger
+        = LoggerFactory.getLogger(OwnerServiceImp.class);
+
 
     private OwnerServiceImp(){}
 
@@ -34,8 +40,10 @@ public class OwnerServiceImp implements OwnerService{
     public ArrayList<OwnerDAO> getAllOwners() throws DataNotFoundException{
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
         ArrayList<OwnerDAO> owners = aerospikeAccess.getSet();
-        if(owners.isEmpty())
+        if(owners.isEmpty()){
+            logger.warn("No records of owners found on the system");
             throw new DataNotFoundException("There is no records for any owner in the database yet.");
+        }
         return owners;
     }
 
@@ -49,8 +57,10 @@ public class OwnerServiceImp implements OwnerService{
     public OwnerDAO getOwner(String userName) throws DataNotFoundException{
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
         OwnerDAO owner = aerospikeAccess.getRecord(userName);
-        if(owner == null)
+        if(owner == null){
+            logger.warn("Owner of username {} was not found!",userName);
             throw new DataNotFoundException("Owner not found!");
+        }
         return owner;
     }
 
@@ -64,12 +74,15 @@ public class OwnerServiceImp implements OwnerService{
      */
     public OwnerDAO deleteOwner(String userName) throws RequestFailedException, DataNotFoundException {
         OwnerDAO owner = getOwner(userName);
-        if(isOwnerHasProperties(userName))
+        if(isOwnerHasProperties(userName)){
+            logger.warn("failed to delete owner {}, he owns properties",userName);
             throw new RequestFailedException("Can't delete an owner that has properties.");
+        }
         try{
             TransactionServiceImp.getInstance().deleteOwnerTransactions(owner);
         }catch (DataNotFoundException ignored){
             //This means the owner already has no transactions to delete
+            logger.info("Owner {} has no transactions, it will be directly deleted",userName);
         }
 
         new AerospikeAccess<>(OwnerDAO.class).deleteRecord(owner);
@@ -82,7 +95,7 @@ public class OwnerServiceImp implements OwnerService{
      * @param ownerUserName the owner username
      * @return the boolean result
      */
-    public boolean isOwnerHasProperties(String ownerUserName){
+    private boolean isOwnerHasProperties(String ownerUserName){
         try{
             //The next line will throw DataNotFoundException if owner has no properties
             PropertyServiceImp.getInstance().getPropertiesOfOwner(ownerUserName);
@@ -102,8 +115,10 @@ public class OwnerServiceImp implements OwnerService{
      */
     public OwnerDAO updateOwner(OwnerDAO ownerUpdated, String userName) throws DataNotFoundException{
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
-        if(aerospikeAccess.getRecord(userName) == null)
+        if(aerospikeAccess.getRecord(userName) == null){
+            logger.warn("failed to update owner {}, owner does not exists", userName);
             throw new DataNotFoundException("Owner doesn't exist");
+        }
         ownerUpdated.setUserName(userName);
         aerospikeAccess.updateRecord(ownerUpdated, "firstName", "lastName");
         return aerospikeAccess.getRecord(userName);
@@ -119,8 +134,10 @@ public class OwnerServiceImp implements OwnerService{
      */
     public OwnerDAO addToOwnerBalance(OwnerDAO ownerDAO, long additionalBalance) throws DataNotFoundException{
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);
-        if(ownerDAO == null)
+        if(ownerDAO == null){
+            logger.warn("failed add balance, owner does not exists");
             throw new DataNotFoundException("Owner doesn't exist");
+        }
         ownerDAO.setBalance(ownerDAO.getBalance() + additionalBalance);
         aerospikeAccess.updateRecord(ownerDAO, "balance");
         return ownerDAO;
@@ -140,11 +157,14 @@ public class OwnerServiceImp implements OwnerService{
         try{
             OwnerDAO owner = OwnerServiceImp.getInstance().getOwner(userName);
             Boolean ownerExists = owner != null;
-            if(Boolean.TRUE.equals(ownerExists))
+            if(Boolean.TRUE.equals(ownerExists)){
+                logger.warn("Failed to add new owner of username {}, owner already exists.", userName);
                 throw new DataAlreadyExistsException("The owner already exists, use different username.");
+            }
         } catch (DataNotFoundException ignored) {
-            //It's a requirement for the data to not exist.
+            //It's a requirement that there is no existing owner of the same data
             //So this is the correct flow, and we ignore the catch
+            logger.info("Adding new owner {}", userName);
         }
         OwnerDAO newOwner = new OwnerDAO(userName, firstName, lastName, balance);
         AerospikeAccess<OwnerDAO> aerospikeAccess = new AerospikeAccess<>(OwnerDAO.class);

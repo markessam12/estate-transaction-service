@@ -11,8 +11,18 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.util.List;
 
+/**
+ * Property controller is the presentation layer of the application.
+ * It exposes the rest APIs related to properties
+ */
 @Path("properties")
 public class PropertyController {
+    /**
+     * Gets all properties stored in the database.
+     *
+     * @param uriInfo the uri info
+     * @return a list of all properties in dto presentation
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllProperties(@Context UriInfo uriInfo) {
@@ -34,6 +44,13 @@ public class PropertyController {
         return Response.ok(propertyList).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
+    /**
+     * Gets a specific property from the database.
+     *
+     * @param id      the property unique id
+     * @param uriInfo the uri info
+     * @return the retrieved property in dto presentation
+     */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -51,6 +68,14 @@ public class PropertyController {
         return Response.ok(property).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
+    /**
+     * Change property cost and sale state.
+     *
+     * @param id          the property unique id
+     * @param uriInfo     the uri info
+     * @param propertyDTO the edited property from the http request body in dto presentation
+     * @return the edited property from the database
+     */
     @PUT
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -69,6 +94,12 @@ public class PropertyController {
         return Response.accepted(propertyUpdatedDTO).links(HypermediaAdder.getSelfLink(uriInfo)).build();
     }
 
+    /**
+     * Delete property from the database.
+     *
+     * @param id the property unique id
+     * @return the deleted property in dto presentation
+     */
     @DELETE
     @Path("{id}")
     @Produces("application/json")

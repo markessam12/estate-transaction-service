@@ -40,14 +40,6 @@ public interface OwnerService {
     public OwnerDAO deleteOwner(String userName) throws RequestFailedException, DataNotFoundException;
 
     /**
-     * Checks if an owner currently owns any properties.
-     *
-     * @param ownerUserName the owner username
-     * @return the boolean result
-     */
-    public boolean isOwnerHasProperties(String ownerUserName);
-
-    /**
      * Update a specific owner record.
      *
      * @param ownerUpdated the updated owner data sent from the controller layer

@@ -5,6 +5,7 @@ import com.estate.model.dao.PropertyDAO;
 import com.estate.model.dto.PropertyDTO;
 import com.estate.repository.AerospikeAccess;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 public interface PropertyMapper {
     PropertyMapper INSTANCE = Mappers.getMapper(PropertyMapper.class);
 
+    @Mapping(target = "links", ignore = true)
     PropertyDTO propertyDaoToDto(PropertyDAO propertyDAO);
     PropertyDAO propertyDtoToDao(PropertyDTO propertyDTO);
     ArrayList<PropertyDTO> propertyListDaoToDto(ArrayList<PropertyDAO> propertyDAOS);

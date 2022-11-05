@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The singleton class representing the transaction service layer and
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
  */
 public class TransactionServiceImp implements TransactionService{
     private static final TransactionServiceImp INSTANCE = new TransactionServiceImp();
+
+    private static final Logger logger
+        = LoggerFactory.getLogger(TransactionServiceImp.class);
 
     private TransactionServiceImp(){}
 
@@ -38,10 +43,13 @@ public class TransactionServiceImp implements TransactionService{
      * @throws DataNotFoundException the data not found exception
      */
     public ArrayList<TransactionDAO> getTransactions() throws DataNotFoundException {
+        logger.info("Retrieving all transactions.");
         AerospikeAccess<TransactionDAO> aerospikeAccess = new AerospikeAccess<>(TransactionDAO.class);
         ArrayList<TransactionDAO> transactions = aerospikeAccess.getSet();
-        if(transactions.isEmpty())
+        if(transactions.isEmpty()) {
+            logger.info("No transactions found in the database");
             throw new DataNotFoundException("There are no transactions.");
+        }
         return transactions;
     }
 
@@ -53,6 +61,7 @@ public class TransactionServiceImp implements TransactionService{
      */
     public void deleteOwnerTransactions(OwnerDAO owner) throws DataNotFoundException{
         ArrayList<TransactionDAO> ownerTransactions = getOwnerTransactions(owner);
+        logger.warn("Deleting all transactions of owner {}", owner.getUserName());
         new AerospikeAccess<>(TransactionDAO.class).deleteRecords(ownerTransactions);
     }
 
@@ -64,6 +73,7 @@ public class TransactionServiceImp implements TransactionService{
      * @throws DataNotFoundException the data not found exception
      */
     public ArrayList<TransactionDAO> getOwnerTransactions(OwnerDAO owner) throws DataNotFoundException {
+        logger.info("Retrieving all transactions of owner {}", owner.getUserName());
         AerospikeAccess<TransactionDAO> aerospikeAccess = new AerospikeAccess<>(TransactionDAO.class);
         ArrayList<TransactionDAO> allTransactions = aerospikeAccess.getSet();
         if(allTransactions == null)
@@ -74,8 +84,10 @@ public class TransactionServiceImp implements TransactionService{
                     transactionDAO.getBuyer().getUserName().equals(owner.getUserName()) ||
                     transactionDAO.getSeller().getUserName().equals(owner.getUserName()))
             .collect(Collectors.toCollection(ArrayList::new));
-        if(ownerTransactions.isEmpty())
+        if(ownerTransactions.isEmpty()) {
+            logger.info("owner has no transactions");
             throw new DataNotFoundException("Owner has no transactions.");
+        }
         return ownerTransactions;
     }
 
@@ -93,6 +105,7 @@ public class TransactionServiceImp implements TransactionService{
                     transactionDAO.getProperty().getPropertyId() == property.getPropertyId()
             )
             .collect(Collectors.toCollection(ArrayList::new));
+        logger.warn("Deleting all transactions of property {}", property.getPropertyId());
         aerospikeAccess.deleteRecords(propertyTransactions);
     }
 
@@ -125,18 +138,26 @@ public class TransactionServiceImp implements TransactionService{
         OwnerDAO buyer = OwnerServiceImp.getInstance().getOwner(buyerID);
         PropertyDAO property = PropertyServiceImp.getInstance().getProperty(propertyID);
         OwnerDAO seller = OwnerServiceImp.getInstance().getOwner(property.getPropertyOwner().getUserName());
-        if(property.getForSale() == 0)
+        if(property.getForSale() == 0) {
+            logger.warn("Transaction failed as property isn't for sale");
             throw new RequestFailedException("Property not for sale.");
-        if(buyer.getBalance() < property.getCost())
+        }
+        if(buyer.getBalance() < property.getCost()) {
+            logger.warn("Transaction failed as owner balance not sufficient");
             throw new RequestFailedException("Insufficient balance.");
-        if(buyer.getUserName().equals(seller.getUserName()))
+        }
+        if(buyer.getUserName().equals(seller.getUserName())) {
+            logger.warn("Transaction failed as property already owned");
             throw new RequestFailedException("Property is already owned by the buyer.");
+        }
         OwnerServiceImp.getInstance().addToOwnerBalance(seller, property.getCost());
         OwnerServiceImp.getInstance().addToOwnerBalance(buyer, - property.getCost());
         property.setPropertyOwner(buyer);
         property.setForSale(0);
         new AerospikeAccess<>(PropertyDAO.class).updateRecord(property);
         TransactionDAO newTransaction = new TransactionDAO(seller, buyer, property);
+        logger.info("Transaction {} created successfully! Buyer {}, Seller {}, property {}, price {} ",
+            newTransaction.getDate(), buyerID, seller.getUserName(), propertyID, property.getCost());
         new AerospikeAccess<>(TransactionDAO.class).saveRecord(newTransaction);
         return newTransaction;
     }

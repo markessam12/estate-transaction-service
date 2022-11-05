@@ -35,9 +35,12 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.23.0'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '2.23.0'
 
-
     implementation group: 'com.aerospike', name: 'aerospike-client', version: '6.1.2'
     implementation 'com.aerospike:java-object-mapper:2.1.0'
+
+    implementation 'ch.qos.logback:logback-core:1.2.3'
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
 }
 
 test {
